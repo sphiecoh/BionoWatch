@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.572
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetR.Web", "NetR.Web\NetR.Web.csproj", "{0A9DFBFB-B806-41FD-B879-91AC7ABB9EC1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetR.Console", "NetR.Console\NetR.Console.csproj", "{AA913963-D1A2-4166-93CE-76589529A02A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0A9DFBFB-B806-41FD-B879-91AC7ABB9EC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A9DFBFB-B806-41FD-B879-91AC7ABB9EC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A9DFBFB-B806-41FD-B879-91AC7ABB9EC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A9DFBFB-B806-41FD-B879-91AC7ABB9EC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA913963-D1A2-4166-93CE-76589529A02A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA913963-D1A2-4166-93CE-76589529A02A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA913963-D1A2-4166-93CE-76589529A02A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA913963-D1A2-4166-93CE-76589529A02A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {37040DD5-1C24-41A0-9A9E-D8B5F3B44243}
+	EndGlobalSection
+EndGlobal

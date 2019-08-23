@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html data-ng-app="BionoWatch">
+
+<head>
+    <meta content="IE=edge, chrome=1" http-equiv="X-UA-Compatible" />
+    <title>Biono Watch Dashboard</title>
+    <link href="assets/css/bootstrap.css" rel="stylesheet" />
+    <link href="assets/css/loading-bar.min.css" rel="stylesheet" />
+    <link href="assets/css/font-awesome.css" rel="stylesheet" />
+    <link href="assets/css/custom-styles.css" rel="stylesheet" />
+    <link href='//fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
+    <link href="assets/css/toastr.min.css" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <link rel="shortcut icon" href="favicon.ico" />
+</head>
+
+<body>
+
+ <div id="wrapper">
+        <nav class="navbar navbar-default top-navbar" role="navigation">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".sidebar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="index.html">
+                <!--<img src="assets/images/logo.png" class="img-thumbnail" />-->
+                    Biono Watch
+                </a>
+            </div>
+        </nav>
+        <nav class="navbar-default navbar-side" role="navigation">
+            <div class="sidebar-collapse">
+                <ul class="nav" id="main-menu">
+                    <li>
+                        <a class="active-menu" href="#/dashboard"><i class="fa fa-dashboard"></i> Dashboard</a>
+                    </li>
+                    <li>
+                        <a class="active-menu" href="#/config"><i class="fa fa-edit"></i> Configuration</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div id="page-wrapper">
+            <div id="page-inner">
+                <div data-ng-view></div>
+            </div>
+        </div>
+    </div>
+    <!-- 3rd party libraries -->
+
+    <script src="assets/scripts/angular.js"></script>
+    <script src="assets/scripts/angular-route.min.js"></script>
+    <script src="assets/scripts/angular-animate.min.js"></script>
+    <script src="assets/scripts/loading-bar.min.js"></script>
+    <script src="assets/scripts/jquery-1.9.0.min.js"></script>
+    <script src="assets/scripts/angular-notify.js"></script>
+    <script src="assets/scripts/signalr.js"></script>
+     <script src="assets/scripts/bootstrap.min.js"></script>
+    <script src="assets/scripts/toastr.min.js"></script>
+    <!--<script src="signalr/hubs"></script>-->
+    <script src="assets/scripts/custom-scripts.js"></script>
+    <script src="assets/scripts/jquery.metisMenu.js"></script>
+    <!-- Load app main script -->
+    <script src="app/app.js"></script>
+
+    <!-- Load services -->
+    <script src="app/services/dashboardService.js"></script>
+    <script src="app/services/logger.js"></script>
+
+    <!-- Load controllers -->
+
+    <script src="app/controllers/configController.js"></script>
+    <script src="app/controllers/dashboardController.js"></script>
+    <script src="app/controllers/navigationController.js"></script>
+    <script src="app/controllers/aboutController.js"></script>
+
+
+
+</body>
+
+</html>
