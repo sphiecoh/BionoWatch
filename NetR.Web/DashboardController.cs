@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using NetR.Web.Infrastructure;
 using NetR.Web.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -12,11 +13,17 @@ namespace NetR.Web
     [Route("api/[controller]")]
     public class DashboardController : Controller
     {
+        private readonly BionoContext bionoContext;
+
+        public DashboardController(BionoContext bionoContext)
+        {
+            this.bionoContext = bionoContext;
+        }
         // GET: api/<controller>
         [HttpGet]
         public IEnumerable<ServiceModel> Get()
         {
-            return new ServiceModel[] { new ServiceModel { ServiceName ="test", ResponsibleServer="local" , Status= "Up", ServerName ="localhost" } };
+            return bionoContext.ServiceConfiguration.Select(x => new ServiceModel {Id = x.Id, Status = x.Status.ToString(), ServiceName = x.ServiceName, ServerName = x.ServerName, Enabled = x.Enabled, ResponsibleServer = x.ResponsibleServer });
         }
 
         // GET api/<controller>/5
