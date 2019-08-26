@@ -18,23 +18,27 @@ namespace NetR.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSignalR();
-            services.AddMvc();
+            services.AddControllers();
             services.AddDbContextPool<BionoContext>(options => {
                 options.UseSqlite("Data Source=bionowatch.db");
             });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            if (env.EnvironmentName == "Development")
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseRouting();
             app.UseStaticFiles();
-            app.UseSignalR(builder => builder.MapHub<NetRHub>("/hub"));
-
-            app.UseMvcWithDefaultRoute();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHub<NetRHub>("/hub");
+                endpoints.MapDefaultControllerRoute();
+            });
+           
         }
     }
 }

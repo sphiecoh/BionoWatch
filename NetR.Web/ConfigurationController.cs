@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using NetR.Web.Infrastructure;
 using NetR.Web.Infrastructure.Entities;
 using NetR.Web.Models;
@@ -16,9 +18,12 @@ namespace NetR.Web
     public class ConfigurationController : Controller
     {
         private readonly BionoContext bionoContext;
-        public ConfigurationController(BionoContext bionoContext)
+        private readonly IHubContext<NetRHub, INetRHub> hubContext;
+
+        public ConfigurationController(BionoContext bionoContext,IHubContext<NetRHub,INetRHub> hubContext)
         {
             this.bionoContext = bionoContext;
+            this.hubContext = hubContext;
         }
         // GET: api/<controller>
         [HttpGet]
@@ -26,16 +31,23 @@ namespace NetR.Web
         {
             return new {
                 Services = bionoContext.ServiceConfiguration.Select(x => new ServiceModel {Id = x.Id, Status = x.Status.ToString(), ServiceName = x.ServiceName, ServerName = x.ServerName, Enabled = x.Enabled, ResponsibleServer = x.ResponsibleServer }),
-                Interval = bionoContext.Configuration.FirstOrDefault(c => c.Key == "PollingInterval").Value,
+                Interval = bionoContext.Configuration.FirstOrDefault(c => c.Key == "PollingInterval")?.Value,
                 EmailReciptients = bionoContext.Configuration.Where(e => e.Key =="NotificationEmail").Select(p => new { p.Id , Email = p.Value })
             };
         }
+        [HttpGet]
+        [Route("interval")]
+        public int GetInterval()
+        {
+             int.TryParse(bionoContext.Configuration.FirstOrDefault(c => c.Key == "PollingInterval")?.Value,out int interval);
+            return interval;
+        }
 
         // GET api/<controller>/5
-        [HttpGet("{id}")]
-        public IEnumerable<object> Get(int id)
+        [HttpGet("{serverName}/services")]
+        public IEnumerable<ServiceConfiguration> GetServices(string serverName)
         {
-            return bionoContext.Configuration;
+            return bionoContext.ServiceConfiguration.Where(s => s.ResponsibleServer == serverName);
         }
 
         // POST api/<controller>
@@ -51,6 +63,8 @@ namespace NetR.Web
                Status = ServiceStatus.Unchecked
            });
            await bionoContext.SaveChangesAsync();
+           await hubContext.Clients.Group(model.ResponsibleServer).AddServerConfig(model);
+           
         }
         [HttpPost]
         [Route("interval")]
@@ -76,9 +90,12 @@ namespace NetR.Web
         }
 
         // PUT api/<controller>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        [HttpPost("{id}/status/{status}")]
+        public async Task UpdateStatus(int id, [FromRoute]string status)
         {
+            var service = await bionoContext.ServiceConfiguration.FirstAsync(s => s.Id == id);
+            service.Status = (ServiceStatus)Enum.Parse(typeof(ServiceStatus), status);
+            await bionoContext.SaveChangesAsync();
         }
 
         // DELETE api/<controller>/5
