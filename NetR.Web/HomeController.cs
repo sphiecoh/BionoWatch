@@ -20,7 +20,7 @@ namespace NetR.Web
         // GET: /<controller>/
         public IActionResult Index()
         {
-            return View();
+            return Redirect("~/index.html");
         }
 
         [HttpPost]

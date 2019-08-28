@@ -32,7 +32,7 @@ namespace NetR.Web
             return new {
                 Services = bionoContext.ServiceConfiguration.Select(x => new ServiceModel {Id = x.Id, Status = x.Status.ToString(), ServiceName = x.ServiceName, ServerName = x.ServerName, Enabled = x.Enabled, ResponsibleServer = x.ResponsibleServer }),
                 Interval = bionoContext.Configuration.FirstOrDefault(c => c.Key == "PollingInterval")?.Value,
-                EmailReciptients = bionoContext.Configuration.Where(e => e.Key =="NotificationEmail").Select(p => new { p.Id , Email = p.Value })
+                EmailReciptients = bionoContext.EmailNotification.ToArray()
             };
         }
         [HttpGet]
@@ -94,12 +94,11 @@ namespace NetR.Web
         [Route("notification")]
         public async Task<object> PostNotification(string email)
         {
-            var conf = new Configuration
+            var conf = new Infrastructure.Entities.EmailNotification
             {
-                Key = "NotificationEmail",
-                Value = email
+               Email = email
             };
-            await bionoContext.Configuration.AddAsync(conf);
+            await bionoContext.EmailNotification.AddAsync(conf);
             await bionoContext.SaveChangesAsync();
             return new { id = conf.Id, email };
         }

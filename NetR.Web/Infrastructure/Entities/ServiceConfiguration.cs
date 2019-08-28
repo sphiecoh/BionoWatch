@@ -13,6 +13,7 @@ namespace NetR.Web.Infrastructure.Entities
         public string ResponsibleServer { get; set; }
         public ServiceStatus Status { get; set; }
         public bool Enabled { get; set; }
+        public ICollection<ServiceGroup> ServiceGroups { get; set; }
     }
 
     public enum ServiceStatus
