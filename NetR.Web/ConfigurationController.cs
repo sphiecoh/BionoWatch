@@ -47,24 +47,37 @@ namespace NetR.Web
         [HttpGet("{serverName}/services")]
         public IEnumerable<ServiceConfiguration> GetServices(string serverName)
         {
-            return bionoContext.ServiceConfiguration.Where(s => s.ResponsibleServer == serverName);
+            return bionoContext.ServiceConfiguration.Where(s => s.ResponsibleServer.Equals(serverName,StringComparison.InvariantCultureIgnoreCase));
         }
 
         // POST api/<controller>
         [HttpPost]
         public async Task Post(ServiceModel model)
         {
-           await bionoContext.ServiceConfiguration.AddAsync(new ServiceConfiguration
-           {
-               Enabled = model.Enabled,
-               ServerName = model.ServerName,
-               ResponsibleServer = model.ResponsibleServer,
-               ServiceName = model.ServiceName,
-               Status = ServiceStatus.Unchecked
-           });
+            var service = new ServiceConfiguration
+            {
+                Enabled = model.Enabled,
+                ServerName = model.ServerName,
+                ResponsibleServer = model.ResponsibleServer,
+                ServiceName = model.ServiceName,
+                Status = ServiceStatus.Unchecked
+            };
+           await bionoContext.ServiceConfiguration.AddAsync(service);
            await bionoContext.SaveChangesAsync();
-           await hubContext.Clients.Group(model.ResponsibleServer).AddServerConfig(model);
+            model.Id = service.Id;
+           await hubContext.Clients.Group(model.ResponsibleServer.ToLower()).AddServerConfig(model);
            
+        }
+        [HttpPut]
+        public async Task<IActionResult> Update(ServiceModel model)
+        {
+            var service = await bionoContext.ServiceConfiguration.FindAsync(model.Id);
+            if (service == null) return NotFound();
+            service.Enabled = model.Enabled;
+            await bionoContext.SaveChangesAsync();
+            if(!service.Enabled) await hubContext.Clients.Group(service.ResponsibleServer).RemoveService(service);
+            return Ok();
+
         }
         [HttpPost]
         [Route("interval")]
@@ -79,29 +92,41 @@ namespace NetR.Web
         }
         [HttpPost]
         [Route("notification")]
-        public async Task PostNotification(string email)
+        public async Task<object> PostNotification(string email)
         {
-            await bionoContext.Configuration.AddAsync(new Configuration
+            var conf = new Configuration
             {
                 Key = "NotificationEmail",
                 Value = email
-            });
+            };
+            await bionoContext.Configuration.AddAsync(conf);
             await bionoContext.SaveChangesAsync();
+            return new { id = conf.Id, email };
         }
 
         // PUT api/<controller>/5
         [HttpPost("{id}/status/{status}")]
-        public async Task UpdateStatus(int id, [FromRoute]string status)
+        public async Task<IActionResult> UpdateStatus(int id, [FromRoute]string status)
         {
+            
             var service = await bionoContext.ServiceConfiguration.FirstAsync(s => s.Id == id);
+            if (service == null) return NotFound();
             service.Status = (ServiceStatus)Enum.Parse(typeof(ServiceStatus), status);
             await bionoContext.SaveChangesAsync();
+            await hubContext.Clients.All.Refresh();
+            return Ok();
         }
 
         // DELETE api/<controller>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
+            var service = await bionoContext.ServiceConfiguration.FirstAsync(s => s.Id == id);
+            if (service == null) return NotFound();
+            bionoContext.ServiceConfiguration.Remove(service);
+            await bionoContext.SaveChangesAsync();
+            await hubContext.Clients.Group(service.ResponsibleServer).RemoveService(service);
+            return Ok();
         }
     }
 }

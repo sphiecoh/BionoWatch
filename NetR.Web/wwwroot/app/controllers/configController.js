@@ -77,10 +77,10 @@ app.controller('configController', function ($scope, $http, logger, apiurl ) {
 
     $scope.enabledChanged = function (config)
     {
-        console.log(config.Enabled);
+        console.log(config.enabled);
         $http({
-            method: 'POST',
-            url: apiurl+'AddServiceConfiguration',
+            method: 'PUT',
+            url: '/api/configuration',
             data: config
         }).success(function (data, status, headers, config) {
             getLogFn('Saved successfully', null, true);
@@ -89,7 +89,7 @@ app.controller('configController', function ($scope, $http, logger, apiurl ) {
         });
     }
     $scope.deleteService = function (id, index) {
-        $http.post(apiurl + 'RemoveService/' + id).success(function () {
+        $http.delete('/api/configuration/' + id).success(function () {
             getLogFn('Saved successfully', null, true);
             $scope.services.splice(index, 1);
         }).error(function (error) { errorlog('error occured', error.Message, true); });

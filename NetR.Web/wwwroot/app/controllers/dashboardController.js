@@ -20,12 +20,16 @@ app.controller('dashboardController', function ($scope, $http, apiurl, logger) {
         .withUrl("/hub")
         .configureLogging(signalR.LogLevel.Information)
         .build();
+    connection.on("Refresh", _ => {
+        $http.get(apiurl)
+            .success(function (data) {
+                $scope.services = data;
+            }).error(function (error) { errorLog('Error occured', error.Message, true); });
+    });
 
     connection.start().then(function () {
         console.log("connected");
     });
-    connection.on("recieve", service => {
-        $scope.services.push(service);
-    });
+ 
     
 });

@@ -12,9 +12,10 @@ namespace NetR.Console.Client
             HubConnection hubConnection = new HubConnectionBuilder().WithUrl("http://localhost:5000/hub").Build();
             await hubConnection.StartAsync();
             await hubConnection.SendAsync("RegisterServer",Dns.GetHostName());
-            hubConnection.On<string>("Recieve", x => {
+            hubConnection.On<string>("AddServerConfig", x => {
                 System.Console.WriteLine(x);
             });
+           // var client = new System.Net.HttpClient { B}
             System.Console.Read();
         }
     }

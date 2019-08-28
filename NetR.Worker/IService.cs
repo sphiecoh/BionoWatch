@@ -8,7 +8,7 @@ namespace NetR.Worker
     public interface IService
     {
          [Get("/api/configuration/{server}/services")]
-         Task<IEnumerable<ServiceConfig>> GetServices(string server);
+         Task<List<ServiceConfig>> GetServices(string server);
           [Post("/api/configuration/{id}/status/{status}")]
          Task UpdateStatus(int id,string status);
          [Get("/api/configuration/interval")]

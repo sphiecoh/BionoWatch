@@ -17,7 +17,7 @@ namespace NetR.Worker
     {
         private readonly ILogger<Worker> _logger;
         public IConfiguration Configuration { get; }
-        IEnumerable<ServiceConfig> services = new List<ServiceConfig>();
+        List<ServiceConfig> services = new List<ServiceConfig>();
         private IService service;
         public Worker(ILogger<Worker> logger, IConfiguration configuration)
         {
@@ -29,30 +29,37 @@ namespace NetR.Worker
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             HubConnection hubConnection = new HubConnectionBuilder().WithUrl($"{Configuration["ApiBase"]}/hub").Build();
-            await hubConnection.StartAsync();
-            await hubConnection.SendAsync("RegisterServer", Environment.MachineName);
+           
             hubConnection.On<ServiceConfig>("AddServerConfig", x =>
             {
-                services.Append(x);
+                services.Add(x);
             });
+            hubConnection.On<ServiceConfig>("RemoveService", x =>
+            {
+                services.Remove(x);
+            });
+            await hubConnection.StartAsync();
+            await hubConnection.SendAsync("RegisterServer", Environment.MachineName);
             int interval = await service.GetInterval();
             services = await service.GetServices(Environment.MachineName);
             if(interval == 0) interval = 1;
             while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                await Task.Delay(TimeSpan.FromMinutes(interval), stoppingToken);
                 foreach (var item in services)
                 {
+                    _logger.LogInformation("Checking service {name}",item.ServiceName);
                     using (var ps = PowerShell.Create())
                     {
-                        var results = ps.AddScript("command").Invoke();
+                        var results = ps.AddScript($"get-service {item.ServiceName}").Invoke();
                         foreach (var result in results)
                         {
-                            //Debug.Write(result.ToString());
+                            var isRunning = result.Properties["Status"].Value.ToString() == "Running";
+                            await service.UpdateStatus(item.Id, isRunning ?"Up" : "Down");
+                            _logger.LogInformation("Service {name} is {status}", item.ServiceName, isRunning ? "Up" : "Down");
                         }
                     }
                 }
+                await Task.Delay(TimeSpan.FromMinutes(interval), stoppingToken);
 
             }
         }

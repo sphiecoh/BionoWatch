@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using NetR.Web.Infrastructure.Entities;
 using NetR.Web.Models;
 using System;
 using System.Collections.Concurrent;
@@ -12,12 +13,14 @@ namespace NetR.Web
     {   
         public void RegisterServer(string server)
         {
-            this.Groups.AddToGroupAsync(this.Context.ConnectionId,server);
+            this.Groups.AddToGroupAsync(this.Context.ConnectionId,server.ToLower());
         }
         
     }
     public interface INetRHub
     {
        Task AddServerConfig(ServiceModel service);
+       Task Refresh();
+        Task RemoveService(ServiceConfiguration service);
     }
 }
