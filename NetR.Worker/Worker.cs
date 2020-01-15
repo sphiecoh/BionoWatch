@@ -32,11 +32,13 @@ namespace NetR.Worker
            
             hubConnection.On<ServiceConfig>("AddServerConfig", x =>
             {
+                _logger.LogInformation("Adding {service}", x.ServiceName);
                 services.Add(x);
             });
             hubConnection.On<ServiceConfig>("RemoveService", x =>
             {
-                services.Remove(x);
+                _logger.LogInformation("Removing {service}",x.ServiceName);
+                services.RemoveAt(services.FindIndex(0,s => s.ServiceName == x.ServiceName));
             });
             await hubConnection.StartAsync();
             await hubConnection.SendAsync("RegisterServer", Environment.MachineName);
@@ -45,20 +47,24 @@ namespace NetR.Worker
             if(interval == 0) interval = 1;
             while (!stoppingToken.IsCancellationRequested)
             {
-                foreach (var item in services)
+                _logger.LogInformation("Checking {count} service(s)", services.Count);
+                Parallel.ForEach(services, async item =>
                 {
-                    _logger.LogInformation("Checking service {name}",item.ServiceName);
-                    using (var ps = PowerShell.Create())
+                    try
                     {
-                        var results = ps.AddScript($"get-service {item.ServiceName}").Invoke();
+                        _logger.LogInformation("Checking service {name}", item.ServiceName);
+                        using var ps = PowerShell.Create();
+
+                        var results = ps.AddScript($"get-service {item.ServiceName} ").Invoke();
                         foreach (var result in results)
                         {
                             var isRunning = result.Properties["Status"].Value.ToString() == "Running";
-                            await service.UpdateStatus(item.Id, isRunning ?"Up" : "Down");
+                            await service.UpdateStatus(item.Id, isRunning ? "Up" : "Down");
                             _logger.LogInformation("Service {name} is {status}", item.ServiceName, isRunning ? "Up" : "Down");
                         }
                     }
-                }
+                    catch(Exception ex) { _logger.LogError("Error",ex); }
+                });
                 await Task.Delay(TimeSpan.FromMinutes(interval), stoppingToken);
 
             }

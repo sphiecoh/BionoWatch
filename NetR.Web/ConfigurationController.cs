@@ -19,11 +19,13 @@ namespace NetR.Web
     {
         private readonly BionoContext bionoContext;
         private readonly IHubContext<NetRHub, INetRHub> hubContext;
+        private readonly IEnumerable<INotifier> notifiers;
 
-        public ConfigurationController(BionoContext bionoContext,IHubContext<NetRHub,INetRHub> hubContext)
+        public ConfigurationController(BionoContext bionoContext, IHubContext<NetRHub, INetRHub> hubContext, IEnumerable<INotifier> notifiers)
         {
             this.bionoContext = bionoContext;
             this.hubContext = hubContext;
+            this.notifiers = notifiers;
         }
         // GET: api/<controller>
         [HttpGet]
@@ -47,12 +49,12 @@ namespace NetR.Web
         [HttpGet("{serverName}/services")]
         public IEnumerable<ServiceConfiguration> GetServices(string serverName)
         {
-            return bionoContext.ServiceConfiguration.Where(s => s.ResponsibleServer.Equals(serverName,StringComparison.InvariantCultureIgnoreCase));
+            return bionoContext.ServiceConfiguration.Where(s => s.ResponsibleServer.Equals(serverName,StringComparison.InvariantCultureIgnoreCase) && s.Enabled);
         }
 
         // POST api/<controller>
         [HttpPost]
-        public async Task Post(ServiceModel model)
+        public async Task<IActionResult> Post(ServiceModel model)
         {
             var service = new ServiceConfiguration
             {
@@ -66,6 +68,7 @@ namespace NetR.Web
            await bionoContext.SaveChangesAsync();
             model.Id = service.Id;
            await hubContext.Clients.Group(model.ResponsibleServer.ToLower()).AddServerConfig(model);
+           return Ok(service);
            
         }
         [HttpPut]
@@ -75,7 +78,8 @@ namespace NetR.Web
             if (service == null) return NotFound();
             service.Enabled = model.Enabled;
             await bionoContext.SaveChangesAsync();
-            if(!service.Enabled) await hubContext.Clients.Group(service.ResponsibleServer).RemoveService(service);
+            if(!service.Enabled) await hubContext.Clients.Group(service.ResponsibleServer.ToLower()).RemoveService(service);
+            await hubContext.Clients.Group(service.ResponsibleServer.ToLower()).AddServerConfig(new ServiceModel { Enabled = model.Enabled , ResponsibleServer = model.ResponsibleServer, ServerName = model.ServerName,ServiceName = model.ServiceName });
             return Ok();
 
         }
@@ -107,12 +111,19 @@ namespace NetR.Web
         [HttpPost("{id}/status/{status}")]
         public async Task<IActionResult> UpdateStatus(int id, [FromRoute]string status)
         {
-            
             var service = await bionoContext.ServiceConfiguration.FirstAsync(s => s.Id == id);
             if (service == null) return NotFound();
             service.Status = (ServiceStatus)Enum.Parse(typeof(ServiceStatus), status);
             await bionoContext.SaveChangesAsync();
             await hubContext.Clients.All.Refresh();
+            if (service.Status == ServiceStatus.Down)
+            {
+                var emails = bionoContext.EmailNotification.ToList();
+                foreach (var notifier in notifiers)
+                {
+                    await notifier.Notify(new NotificationModel {  Email = new Email { FromAddress = "monitoring@soft-aer.com", Subject ="Warning : A critical service is down !!!" ,Message = $"{service.ServiceName} on {service.ServerName} is down", Recipients = string.Join(';',emails.Select(x => x.Email)) } });
+                }
+            }
             return Ok();
         }
 

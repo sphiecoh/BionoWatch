@@ -1,0 +1,92 @@
+﻿<div class="row" ng-init="load()">
+    <div class="col-md-12">
+        <h1 class="page-header">
+            <small>Group Configuration</small>
+        </h1>
+    </div>
+</div>
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Notification Group
+        </div>
+        <div class="panel-body">
+            <form class="form-horizontal" novalidate ng-submit="saveGroup(group)" name="frmEmail">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Name </label>
+                    <div class="col-sm-4">
+                        <input class="form-control" ng-model="group.name" name="name" type="text" required />
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="submit" class="btn btn-primary" ng-disabled="!frmEmail.$valid">Save</button>
+                    </div>
+                </div>
+
+
+            </form>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Notification Groups
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Actions</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="group in groups">
+                            <td>{{group.name}}</td>
+                            <td>
+                                <button class="btn btn-default" ng-click="delete(group.id,$index)"><span class="glyphicon glyphicon-trash"></span></button>
+                                <button class="btn btn-default" ng-click="detail(group.id)"><span class="glyphicon glyphicon-pencil"></span></button>
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row" ng-show="groupEmails.lenght > 0">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Notification Groups Emails
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Address</th>
+                            <th>Actions</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="email in groupEmails">
+                            <td>{{email.name}}</td>
+                            <td>
+                                <button class="btn btn-default" ng-click="delete(group.id,$index)"><span class="glyphicon glyphicon-trash"></span></button>
+                                <button class="btn btn-default" ng-click="detail(group.id)"><span class="glyphicon glyphicon-pencil"></span></button>
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

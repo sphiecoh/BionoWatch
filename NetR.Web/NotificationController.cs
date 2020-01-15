@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using NetR.Web.Infrastructure;
 using NetR.Web.Infrastructure.Entities;
 
@@ -37,11 +38,21 @@ namespace NetR.Web
         [HttpGet("groups/{id}/notifications")]
         public async Task<IActionResult> GetGroupNotifications(int id)
         {
+            var notificationGroups = await bionoContext.NotificationGroups.Include(x => x.EmailNotification).Where(x => x.GroupId == id).ToListAsync();
+
+            return Ok(notificationGroups);
+        }
+        [HttpDelete("groups/{id}")]
+        public async Task<IActionResult> DeleteGroup(int id)
+        {
+            bionoContext.Database.ExecuteSqlCommand($"delete from Groups where id = {id}");
             return Ok();
         }
-
-
-
+        [HttpGet]
+        public IActionResult GetGroups()
+        {
+            return Ok(bionoContext.Groups.ToList());
+        }
 
     }
 }

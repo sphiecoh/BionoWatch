@@ -15,9 +15,9 @@ app.config(function ($routeProvider) {
         templateUrl: "app/views/config.html"
     });
 
-    $routeProvider.when("/about", {
-        controller: "aboutController",
-        templateUrl: "app/views/about.html"
+    $routeProvider.when("/group", {
+        controller: "groupController",
+        templateUrl: "app/views/group.html"
     });
 
     $routeProvider.otherwise({ redirectTo: "/dashboard" });
